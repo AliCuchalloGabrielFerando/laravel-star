@@ -1,0 +1,19 @@
+# <tipo>(<scope>): <descripción corta>
+# 
+# Tipos válidos:
+# feat: Nueva funcionalidad
+# fix: Corrección de bug
+# docs: Cambios en documentación
+# style: Formato (sin cambios funcionales)
+# refactor: Refactorización
+# perf: Mejoras de rendimiento
+# test: Tests
+# build: Build/dependencias
+# ci: CI/CD
+# chore: Mantenimiento
+# revert: Revertir commits
+#
+# Ejemplos:
+# feat(auth): agregar login con Google
+# fix(api): corregir validación de usuarios
+# docs(readme): actualizar instrucciones

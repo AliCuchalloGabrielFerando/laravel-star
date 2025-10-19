@@ -1,5 +1,4 @@
 /.phpunit.cache
-/node_modules
 /public/build
 /public/hot
 /public/storage
@@ -13,11 +12,19 @@
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
-npm-debug.log
-yarn-error.log
 /auth.json
 /.fleet
 /.idea
 /.nova
 /.vscode
 /.zed
+
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Husky
+.husky/_

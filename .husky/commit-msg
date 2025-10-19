@@ -1,0 +1,44 @@
+#!/usr/bin/env sh
+
+echo "📝 Validando mensaje de commit..."
+
+# Verificar si Docker está corriendo
+if ! docker-compose ps | grep -q "Up"; then
+    echo "⚠️  Advertencia: Contenedores no están corriendo, saltando validación"
+    exit 0
+fi
+
+# Validar con commitlint dentro del contenedor
+docker-compose exec -T app npx --no -- commitlint --edit $1
+
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "❌ Mensaje de commit inválido"
+    echo ""
+    echo "📋 Formato correcto:"
+    echo "  tipo(scope): descripción"
+    echo ""
+    echo "✅ Tipos válidos:"
+    echo "  feat     - Nueva funcionalidad"
+    echo "  fix      - Corrección de bug"
+    echo "  docs     - Cambios en documentación"
+    echo "  style    - Formato de código (sin cambios funcionales)"
+    echo "  refactor - Refactorización de código"
+    echo "  perf     - Mejoras de rendimiento"
+    echo "  test     - Agregar o modificar tests"
+    echo "  build    - Cambios en build/dependencias"
+    echo "  ci       - Cambios en CI/CD"
+    echo "  chore    - Tareas de mantenimiento"
+    echo "  revert   - Revertir commits anteriores"
+    echo ""
+    echo "📝 Ejemplos:"
+    echo "  feat(auth): agregar login con Google"
+    echo "  fix(api): corregir validación de usuarios"
+    echo "  docs(readme): actualizar instrucciones"
+    echo "  chore(deps): actualizar laravel/debugbar"
+    echo ""
+    exit 1
+fi
+
+echo "✅ Mensaje de commit válido"
+exit 0

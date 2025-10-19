@@ -24,9 +24,17 @@ help:
 	@echo "  make up                - Levantar contenedores"
 	@echo "  make down              - Detener contenedores"
 	@echo "  make restart           - Reiniciar contenedores"
-	@echo "  make rebuild           - Reconstruir contenedores"
+	@echo "  make rebuild           - Reconstruir contenedores (con caché)"
+	@echo "  make rebuild-full      - Reconstruir TODO desde cero"
 	@echo "  make logs              - Ver logs"
 	@echo "  make shell             - Entrar al contenedor"
+	@echo ""
+	@echo "🎨 Código:"
+	@echo "  make format            - Formatear código con Pint"
+	@echo "  make format-check      - Verificar formato"
+	@echo "  make install-tools     - Instalar herramientas de desarrollo"
+	@echo "  make check-versions    - Ver versiones instaladas"
+
 
 init:
 	@echo "🚀 Inicializando proyecto Laravel 11..."
@@ -131,6 +139,36 @@ rebuild:
 	@$(DOCKER_COMPOSE) build
 	@$(DOCKER_COMPOSE) up -d
 
+rebuild-full:
+	@echo "🔨 Reconstruyendo TODO desde cero..."
+	@$(DOCKER_COMPOSE) down
+	@$(DOCKER_COMPOSE) build --no-cache
+	@$(DOCKER_COMPOSE) up -d
+	@echo "✅ Reconstrucción completa finalizada"
+
+
+check-versions:
+	@echo "📊 Versiones instaladas:"
+	@echo ""
+	@echo "🐘 PHP:"
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) php -v | head -n 1
+	@echo ""
+	@echo "🎼 Composer:"
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) composer --version
+	@echo ""
+	@echo "📦 Node.js:"
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) node --version
+	@echo ""
+	@echo "📦 NPM:"
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) npm --version
+	@echo ""
+	@echo "🗄️ MySQL:"
+	@$(DOCKER_COMPOSE) exec $(DB_CONTAINER) mysql --version
+	@echo ""
+	@echo "🔴 Redis:"
+	@$(DOCKER_COMPOSE) exec $(CACHE_CONTAINER) redis-server --version
+
+
 logs:
 	@$(DOCKER_COMPOSE) logs -f
 
@@ -169,6 +207,53 @@ npm:
 
 npm-install:
 	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) npm install
+
+# Formateo de código
+format:
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) ./vendor/bin/pint
+
+format-check:
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) ./vendor/bin/pint --test
+
+# Instalar herramientas de calidad de código
+install-tools:
+	@echo "📦 Instalando herramientas de desarrollo..."
+	@echo ""
+	@echo "🔍 Verificando versiones..."
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) node --version
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) npm --version
+	@echo ""
+	@echo "📦 Instalando Pint (Composer)..."
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) composer require laravel/pint --dev
+	@echo ""
+	@echo "📦 Instalando Husky y Commitlint (NPM)..."
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) npm install --save-dev \
+	    husky@^9.0.0 \
+	    @commitlint/cli@^18.4.3 \
+	    @commitlint/config-conventional@^18.4.3 \
+	    lint-staged@^15.2.0
+	@echo ""
+	@echo "🪝 Inicializando Husky..."
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) npx husky init
+	@echo ""
+	@echo "🔧 Dando permisos a hooks..."
+	@chmod +x .husky/pre-commit
+	@chmod +x .husky/commit-msg
+	@echo ""
+	@echo "✅ Herramientas instaladas correctamente"
+	@echo ""
+	@echo "📝 Ahora actualiza manualmente:"
+	@echo "  .husky/pre-commit"
+	@echo "  .husky/commit-msg"
+	@echo ""
+	@make check-versions
+
+fix-hooks:
+	@echo "🔧 Reparando hooks de Git..."
+	@chmod +x .husky/pre-commit
+	@chmod +x .husky/commit-msg
+	@git config core.hooksPath .husky
+	@echo "✅ Hooks reparados"
 
 cache-clear:
 	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) php artisan cache:clear

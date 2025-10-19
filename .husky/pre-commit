@@ -1,0 +1,35 @@
+#!/usr/bin/env sh
+
+echo "🎨 Formateando código con Laravel Pint..."
+
+# Verificar si Docker está corriendo
+if ! docker-compose ps | grep -q "Up"; then
+    echo "❌ Error: Los contenedores no están corriendo"
+    echo "   Ejecuta: make up"
+    exit 1
+fi
+
+# Obtener archivos PHP staged
+FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep '\.php$' || true)
+
+if [ -z "$FILES" ]; then
+    echo "✅ No hay archivos PHP para formatear"
+    exit 0
+fi
+
+echo "📝 Archivos a formatear:"
+echo "$FILES" | sed 's/^/  - /'
+
+# Formatear con Pint dentro del contenedor
+docker-compose exec -T app ./vendor/bin/pint $FILES
+
+# Si Pint modificó archivos, agregarlos al commit
+if [ $? -eq 0 ]; then
+    echo "$FILES" | xargs git add
+    echo "✅ Código formateado correctamente"
+else
+    echo "❌ Error al formatear código"
+    exit 1
+fi
+
+exit 0

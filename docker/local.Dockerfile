@@ -1,13 +1,11 @@
-# Usar versión estable y probada
 FROM php:8.3.14-fpm-alpine3.20
 
-# ⚡ ESTO SOLUCIONA LA MAYORÍA DE VULNERABILIDADES
-# Actualizar TODOS los paquetes del sistema a sus últimas versiones
+# Actualizar paquetes del sistema
 RUN apk update && \
     apk upgrade --no-cache && \
     rm -rf /var/cache/apk/*
 
-# Instalar dependencias del sistema
+# Instalar Node.js 20.x LTS (versión específica)
 RUN apk add --no-cache \
     git \
     curl \
@@ -23,7 +21,12 @@ RUN apk add --no-cache \
     postgresql-dev \
     openssh-client \
     bash \
-    shadow
+    shadow \
+    nodejs~=20 \
+    npm
+
+# Verificar versiones instaladas
+RUN node --version && npm --version
 
 # Instalar extensiones de PHP necesarias para Laravel
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -46,7 +49,7 @@ RUN apk add --no-cache $PHPIZE_DEPS \
     && apk del $PHPIZE_DEPS \
     && rm -rf /tmp/pear
 
-# Instalar Composer desde versión específica
+# Instalar Composer 2.8.x
 COPY --from=composer:2.8 /usr/bin/composer /usr/bin/composer
 
 # Configuración de seguridad de PHP
