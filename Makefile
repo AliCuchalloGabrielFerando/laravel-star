@@ -128,7 +128,7 @@ restart:
 
 rebuild:
 	@$(DOCKER_COMPOSE) down
-	@$(DOCKER_COMPOSE) build --no-cache
+	@$(DOCKER_COMPOSE) build
 	@$(DOCKER_COMPOSE) up -d
 
 logs:
