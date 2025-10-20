@@ -250,11 +250,11 @@ install-tools:
 	@make check-versions
 
 fix-hooks:
-    @echo "🔧 Restaurando hooks de Git..."
-    @chmod +x .husky/pre-commit .husky/commit-msg
-    @echo "✅ Hooks restaurados correctamente"
-    @echo ""
-    @echo "Los hooks ahora ejecutan dentro de Docker"
+	@echo "🔧 Restaurando hooks de Git..."
+	@chmod +x .husky/pre-commit .husky/commit-msg
+	@echo "✅ Hooks restaurados correctamente"
+	@echo ""
+	@echo "Los hooks ahora ejecutan dentro de Docker"
 
 cache-clear:
 	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) php artisan cache:clear
