@@ -301,33 +301,33 @@ clean:
 # Acceso a PostgreSQL
 db-shell:
 	@echo "🐘 Conectando a PostgreSQL..."
-	@$(DOCKER_COMPOSE) exec $(DB_CONTAINER) psql -U $(DB_USERNAME:-laravel) -d $(DB_DATABASE:-laravel)
+	@$(DOCKER_COMPOSE) exec $(DB_CONTAINER) psql -U laravel -d laravel
 
 # Backup de base de datos
 db-backup:
 	@echo "💾 Creando backup de PostgreSQL..."
 	@mkdir -p backups
-	@$(DOCKER_COMPOSE) exec -T $(DB_CONTAINER) pg_dump -U laravel laravel > backups/backup_$(shell date +%Y%m%d_%H%M%S).sql
+	@$(DOCKER_COMPOSE) exec -T $(DB_CONTAINER) pg_dump -U laravel -d laravel > backups/backup_$(shell date +%Y%m%d_%H%M%S).sql
 	@echo "✅ Backup creado en backups/"
 
 # Restaurar backup
 db-restore:
-	@if [ -z "$(file)" ]; then echo "❌ Error: usa file='backups/backup.sql'"; exit 1; fi
+	@if [ -z "$(file)" ]; then echo "❌ Error: usa make db-restore file='backups/backup.sql'"; exit 1; fi
 	@echo "📥 Restaurando backup..."
-	@$(DOCKER_COMPOSE) exec -T $(DB_CONTAINER) psql -U laravel laravel < $(file)
+	@$(DOCKER_COMPOSE) exec -T $(DB_CONTAINER) psql -U laravel -d laravel < $(file)
 	@echo "✅ Backup restaurado"
 
 # Ver versión de PostgreSQL
 db-version:
 	@echo "🐘 Versión de PostgreSQL:"
-	@$(DOCKER_COMPOSE) exec $(DB_CONTAINER) psql -U laravel -c "SELECT version();"
+	@$(DOCKER_COMPOSE) exec $(DB_CONTAINER) psql -U laravel -d laravel -c "SELECT version();"
 
 # Listar bases de datos
 db-list:
 	@echo "📊 Bases de datos disponibles:"
-	@$(DOCKER_COMPOSE) exec $(DB_CONTAINER) psql -U laravel -c "\l"
+	@$(DOCKER_COMPOSE) exec $(DB_CONTAINER) psql -U laravel -d postgres -c "\l"
 
 # Ver tablas
 db-tables:
 	@echo "📋 Tablas en la base de datos:"
-	@$(DOCKER_COMPOSE) exec $(DB_CONTAINER) psql -U laravel laravel -c "\dt"
+	@$(DOCKER_COMPOSE) exec $(DB_CONTAINER) psql -U laravel -d laravel -c "\dt"
