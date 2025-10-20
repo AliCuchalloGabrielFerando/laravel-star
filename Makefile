@@ -226,43 +226,35 @@ format-check:
 
 # Instalar herramientas de calidad de código
 install-tools:
-	@echo "📦 Instalando herramientas de desarrollo..."
+	@echo "🔧 Instalando herramientas de desarrollo..."
 	@echo ""
-	@echo "🔍 Verificando versiones..."
-	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) node --version
-	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) npm --version
+	@echo "📦 Instalando dependencias de Composer..."
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) composer install --no-interaction --prefer-dist --optimize-autoloader
 	@echo ""
-	@echo "📦 Instalando Pint (Composer)..."
-	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) composer require laravel/pint --dev
+	@echo "📦 Instalando dependencias de NPM..."
+	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) npm install
 	@echo ""
-	@echo "📦 Instalando Husky y Commitlint (NPM)..."
-	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) npm install --save-dev \
-	    husky@^9.0.0 \
-	    @commitlint/cli@^18.4.3 \
-	    @commitlint/config-conventional@^18.4.3 \
-	    lint-staged@^15.2.0
+	@echo "🎨 Verificando Laravel Pint..."
+	@if ! $(DOCKER_COMPOSE) exec $(APP_CONTAINER) test -f ./vendor/bin/pint; then \
+	    echo "⚠️  Laravel Pint no encontrado, instalando..."; \
+	    $(DOCKER_COMPOSE) exec $(APP_CONTAINER) composer require laravel/pint --dev; \
+	fi
 	@echo ""
-	@echo "🪝 Inicializando Husky..."
-	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) npx husky init
-	@echo ""
-	@echo "🔧 Dando permisos a hooks..."
-	@chmod +x .husky/pre-commit
-	@chmod +x .husky/commit-msg
+	@echo "🔧 Restaurando hooks de Git personalizados..."
+	@chmod +x .husky/pre-commit .husky/commit-msg
 	@echo ""
 	@echo "✅ Herramientas instaladas correctamente"
 	@echo ""
-	@echo "📝 Ahora actualiza manualmente:"
-	@echo "  .husky/pre-commit"
-	@echo "  .husky/commit-msg"
-	@echo ""
+	@echo "📝 Hooks de Git configurados para usar Docker"
+
 	@make check-versions
 
 fix-hooks:
-	@echo "🔧 Reparando hooks de Git..."
-	@chmod +x .husky/pre-commit
-	@chmod +x .husky/commit-msg
-	@git config core.hooksPath .husky
-	@echo "✅ Hooks reparados"
+    @echo "🔧 Restaurando hooks de Git..."
+    @chmod +x .husky/pre-commit .husky/commit-msg
+    @echo "✅ Hooks restaurados correctamente"
+    @echo ""
+    @echo "Los hooks ahora ejecutan dentro de Docker"
 
 cache-clear:
 	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) php artisan cache:clear
