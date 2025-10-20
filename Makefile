@@ -29,6 +29,15 @@ help:
 	@echo "  make logs              - Ver logs"
 	@echo "  make shell             - Entrar al contenedor"
 	@echo ""
+	@echo "🐘 Base de datos (PostgreSQL):"
+	@echo "  make migrate           - Ejecutar migraciones"
+	@echo "  make fresh             - Reset DB y ejecutar migraciones"
+	@echo "  make db-shell          - Conectar a PostgreSQL"
+	@echo "  make db-backup         - Crear backup de base de datos"
+	@echo "  make db-restore file='backup.sql' - Restaurar backup"
+	@echo "  make db-version        - Ver versión de PostgreSQL"
+	@echo "  make db-tables         - Listar tablas"
+	@echo ""
 	@echo "🎨 Código:"
 	@echo "  make format            - Formatear código con Pint"
 	@echo "  make format-check      - Verificar formato"
@@ -162,8 +171,8 @@ check-versions:
 	@echo "📦 NPM:"
 	@$(DOCKER_COMPOSE) exec $(APP_CONTAINER) npm --version
 	@echo ""
-	@echo "🗄️ MySQL:"
-	@$(DOCKER_COMPOSE) exec $(DB_CONTAINER) mysql --version
+	@echo "🐘 PostgreSQL:"
+	@$(DOCKER_COMPOSE) exec $(DB_CONTAINER) psql --version
 	@echo ""
 	@echo "🔴 Redis:"
 	@$(DOCKER_COMPOSE) exec $(CACHE_CONTAINER) redis-server --version
@@ -295,3 +304,38 @@ clean:
 	@$(DOCKER_COMPOSE) down --volumes
 	@rm -rf vendor node_modules bootstrap/cache/* storage/logs/* .laravel-temp
 	@echo "✅ Limpieza completa"
+
+
+# Acceso a PostgreSQL
+db-shell:
+	@echo "🐘 Conectando a PostgreSQL..."
+	@$(DOCKER_COMPOSE) exec $(DB_CONTAINER) psql -U $(DB_USERNAME:-laravel) -d $(DB_DATABASE:-laravel)
+
+# Backup de base de datos
+db-backup:
+	@echo "💾 Creando backup de PostgreSQL..."
+	@mkdir -p backups
+	@$(DOCKER_COMPOSE) exec -T $(DB_CONTAINER) pg_dump -U laravel laravel > backups/backup_$(shell date +%Y%m%d_%H%M%S).sql
+	@echo "✅ Backup creado en backups/"
+
+# Restaurar backup
+db-restore:
+	@if [ -z "$(file)" ]; then echo "❌ Error: usa file='backups/backup.sql'"; exit 1; fi
+	@echo "📥 Restaurando backup..."
+	@$(DOCKER_COMPOSE) exec -T $(DB_CONTAINER) psql -U laravel laravel < $(file)
+	@echo "✅ Backup restaurado"
+
+# Ver versión de PostgreSQL
+db-version:
+	@echo "🐘 Versión de PostgreSQL:"
+	@$(DOCKER_COMPOSE) exec $(DB_CONTAINER) psql -U laravel -c "SELECT version();"
+
+# Listar bases de datos
+db-list:
+	@echo "📊 Bases de datos disponibles:"
+	@$(DOCKER_COMPOSE) exec $(DB_CONTAINER) psql -U laravel -c "\l"
+
+# Ver tablas
+db-tables:
+	@echo "📋 Tablas en la base de datos:"
+	@$(DOCKER_COMPOSE) exec $(DB_CONTAINER) psql -U laravel laravel -c "\dt"

@@ -1,11 +1,11 @@
-FROM php:8.3.14-fpm-alpine3.20
+FROM php:8.3-fpm-alpine3.21
 
 # Actualizar paquetes del sistema
 RUN apk update && \
     apk upgrade --no-cache && \
     rm -rf /var/cache/apk/*
 
-# Instalar Node.js 20.x LTS (versión específica)
+# Instalar Node.js 20.x LTS y dependencias
 RUN apk add --no-cache \
     git \
     curl \
@@ -17,23 +17,26 @@ RUN apk add --no-cache \
     oniguruma-dev \
     libxml2-dev \
     libzip-dev \
-    mysql-client \
     postgresql-dev \
+    postgresql-client \
     openssh-client \
     bash \
     shadow \
-    nodejs~=20 \
+    nodejs \
     npm
 
 # Verificar versiones instaladas
-RUN node --version && npm --version
+RUN echo "📦 Versiones instaladas:" && \
+    echo "Node: $(node --version)" && \
+    echo "NPM: $(npm --version)" && \
+    echo "PostgreSQL client: $(psql --version)"
 
 # Instalar extensiones de PHP necesarias para Laravel
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
     pdo \
-    pdo_mysql \
     pdo_pgsql \
+    pgsql \
     mbstring \
     exif \
     pcntl \

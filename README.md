@@ -12,9 +12,9 @@
 |-------------|---------|
 | PHP | 8.3.14 |
 | Composer | 2.8.x |
-| Node.js | 20.18.0 LTS |
+| Node.js | 20.15.1 |
 | NPM | 10.x |
-| MySQL | 8.0 |
+| PostgreSQL | 16 Alpine |
 | Redis | Alpine |
 | Nginx | Alpine |
 
@@ -31,6 +31,25 @@ git clone <repo>
 cd project
 make setup
 make install-tools
+```
+
+## 🐘 PostgreSQL
+
+### Comandos útiles
+
+```bash
+# Conectar a la base de datos
+make db-shell
+
+# Dentro de psql:
+\l              # Listar bases de datos
+\dt             # Listar tablas
+\d users        # Describir tabla users
+\q              # Salir
+
+# Backup y restore
+make db-backup
+make db-restore file='backups/backup_20241019.sql'
 ```
 
 ## 🔍 Verificar versiones

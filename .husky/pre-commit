@@ -3,10 +3,11 @@
 echo "🎨 Formateando código con Laravel Pint..."
 
 # Verificar si Docker está corriendo
-if ! docker-compose ps | grep -q "Up"; then
-    echo "❌ Error: Los contenedores no están corriendo"
+if ! docker-compose ps 2>/dev/null | grep -q "Up"; then
+    echo "⚠️  Advertencia: Contenedores no están corriendo"
     echo "   Ejecuta: make up"
-    exit 1
+    echo "   Saltando formateo..."
+    exit 0
 fi
 
 # Obtener archivos PHP staged
@@ -19,6 +20,14 @@ fi
 
 echo "📝 Archivos a formatear:"
 echo "$FILES" | sed 's/^/  - /'
+
+# Verificar que vendor/bin/pint existe
+if ! docker-compose exec -T app test -f ./vendor/bin/pint; then
+    echo "⚠️  Advertencia: Laravel Pint no encontrado"
+    echo "   Ejecuta: make shell && composer install"
+    echo "   Saltando formateo..."
+    exit 0
+fi
 
 # Formatear con Pint dentro del contenedor
 docker-compose exec -T app ./vendor/bin/pint $FILES
